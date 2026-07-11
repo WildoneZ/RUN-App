@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* System stacks keep the build hermetic; swap for brand webfonts later. */
+  --font-display: 'Avenir Next', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-body: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+html {
+  background: theme('colors.ink.DEFAULT');
+  color: #f2f5fb;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-body);
+  min-height: 100dvh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-card bg-ink-card border border-ink-line p-4 shadow-card;
+  }
+  .btn-primary {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-pill bg-accent px-6 py-3 font-display text-base font-bold text-white shadow-pop transition active:scale-95 disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-pill border border-ink-line px-6 py-3 font-display text-base font-semibold text-paper transition active:scale-95;
+  }
+  .input {
+    @apply min-h-[44px] w-full rounded-xl border border-ink-line bg-ink-soft px-4 py-3 text-paper placeholder:text-paper/40 focus:border-accent focus:outline-none;
+  }
+  .label {
+    @apply mb-1 block text-sm font-semibold text-paper/70;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-pill px-2.5 py-1 text-xs font-bold;
+  }
+}
