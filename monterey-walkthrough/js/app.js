@@ -719,7 +719,7 @@
   const lookhint = document.getElementById('lookhint');
   let pointerLocked = false, dragging = false, lastPX = 0, lastPY = 0, moved = false;
   const SENS = 0.0022;
-  canvas.addEventListener('click', () => { if (!pointerLocked && canvas.requestPointerLock && !('ontouchstart' in window)) canvas.requestPointerLock(); });
+  canvas.addEventListener('click', () => { if (!pointerLocked && canvas.requestPointerLock && !('ontouchstart' in window)) { try { const r = canvas.requestPointerLock(); if (r && r.catch) r.catch(() => {}); } catch (e) { /* pointer lock unavailable (embedded frame) — drag-to-look still works */ } } });
   document.addEventListener('pointerlockchange', () => { pointerLocked = document.pointerLockElement === canvas; lookhint.classList.toggle('faded', pointerLocked || moved); });
   window.addEventListener('mousemove', (e) => { if (pointerLocked) { player.yaw -= e.movementX * SENS; player.pitch = THREE.MathUtils.clamp(player.pitch - e.movementY * SENS, -1.2, 1.2); } });
   canvas.addEventListener('pointerdown', (e) => { if (pointerLocked) return; dragging = true; lastPX = e.clientX; lastPY = e.clientY; canvas.setPointerCapture(e.pointerId); });

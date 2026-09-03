@@ -30,3 +30,10 @@ html = html
 mkdirSync(join(root, 'dist'), { recursive: true });
 writeFileSync(join(root, 'dist', 'monterey-walkthrough.html'), html);
 console.log('wrote dist/monterey-walkthrough.html', (html.length / 1024 / 1024).toFixed(2), 'MB');
+
+// Artifact variant: no doctype/html/head/body wrappers (the host supplies them); title + fonts + style + body content.
+const headBits = html.match(/<title>[\s\S]*?<\/title>/)[0] + '\n' + [...html.matchAll(/<link[^>]*fonts\.googleapis[^>]*>/g)].map((m) => m[0]).join('\n') + '\n' + html.match(/<style>[\s\S]*?<\/style>/)[0];
+const bodyBits = html.match(/<body>([\s\S]*)<\/body>/)[1];
+const art = headBits + '\n' + bodyBits;
+writeFileSync(join(root, 'dist', 'monterey-walkthrough-artifact.html'), art);
+console.log('wrote dist/monterey-walkthrough-artifact.html', (art.length / 1024 / 1024).toFixed(2), 'MB');
