@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Monterey of AVIEW · Residence 5A Walkthrough</title>
+<meta name="description" content="First-person walkthrough of Residence 5A at Monterey of AVIEW, Bishopscourt — built from the architect's floor plans and the brochure finishes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<canvas id="scene"></canvas>
+
+<div id="loading">
+  <div class="mark">M</div>
+  <div class="brand">MONTEREY<span>OF AVIEW</span></div>
+  <div class="sub">Residence 5A · Bishopscourt</div>
+  <div class="bar"><i></i></div>
+  <div class="hint">Building the house from the floor plans…</div>
+</div>
+
+<div id="hud">
+  <header id="top">
+    <div class="brand"><b>MONTEREY</b> <span>of AVIEW</span> · Residence 5A</div>
+    <div id="levelchip">Ground floor</div>
+    <div id="compass"><i></i><b>N</b></div>
+  </header>
+
+  <div id="crosshair"></div>
+  <div id="lookhint">Click to look around · Arrow keys / WASD to walk · <b>H</b> for help</div>
+
+  <aside id="roomcard" class="hidden">
+    <div class="rc-level"></div>
+    <h2 class="rc-name"></h2>
+    <div class="rc-sub"></div>
+    <div class="rc-dims"></div>
+    <p class="rc-spec"></p>
+    <figure class="rc-render hidden"><img alt=""><figcaption></figcaption></figure>
+  </aside>
+
+  <nav id="tools">
+    <button data-panel="map" class="active" title="Mini map (M)">Map</button>
+    <button data-panel="plan" title="Architect's plan (P)">Plan</button>
+    <button data-panel="rooms" title="Jump to a room (T)">Rooms</button>
+    <button data-panel="help" title="Controls (H)">Help</button>
+  </nav>
+
+  <section id="minimap" class="panel"><canvas width="230" height="330"></canvas><div class="mm-legend">You are here · N is up</div></section>
+
+  <section id="planpanel" class="panel hidden">
+    <div class="plan-head"><span class="plan-title"></span><button class="close" data-close>✕</button></div>
+    <div class="plan-wrap"><img alt="Floor plan"><div class="plan-dot"></div></div>
+    <div class="plan-note">PLATFORM Architects · scale 1:100 · figured dimensions only</div>
+  </section>
+
+  <section id="roomspanel" class="panel hidden">
+    <div class="plan-head"><span>Walk straight to…</span><button class="close" data-close>✕</button></div>
+    <div class="room-groups"></div>
+  </section>
+
+  <section id="helppanel" class="panel hidden">
+    <div class="plan-head"><span>How to walk through</span><button class="close" data-close>✕</button></div>
+    <div class="help-body">
+      <dl>
+        <dt>Walk</dt><dd><kbd>↑</kbd><kbd>↓</kbd> or <kbd>W</kbd><kbd>S</kbd> forward / back · <kbd>A</kbd><kbd>D</kbd> side-step · hold <kbd>Shift</kbd> to hurry</dd>
+        <dt>Turn</dt><dd><kbd>←</kbd><kbd>→</kbd> turn · <kbd>Q</kbd><kbd>E</kbd> look up / down</dd>
+        <dt>Mouse</dt><dd>Click the view to capture the mouse, then move to look. <kbd>Esc</kbd> releases it. Drag also works.</dd>
+        <dt>Trackpad</dt><dd>Two-finger scroll: up / down walks, left / right turns. Drag to look around.</dd>
+        <dt>Touch</dt><dd>Drag to look, use the on-screen arrows to walk.</dd>
+        <dt>Stairs</dt><dd>Just walk onto them — the main stair rises from the entrance hall along the west wall.</dd>
+        <dt>Keys</dt><dd><kbd>M</kbd> map · <kbd>P</kbd> architect's plan · <kbd>T</kbd> room list · <kbd>R</kbd> back to the front door · <kbd>F</kbd> fullscreen</dd>
+      </dl>
+      <p class="fine">Modelled to the figured dimensions on the Residence 5A ground, first and second floor plans (PLATFORM Architects). Finishes follow the brochure specification: Oggie oak herringbone floors, Caesarstone counters, Hansgrohe fittings, timber pergolas and screens, off-shutter concrete ceilings, brass detailing. Furniture is indicative.</p>
+    </div>
+  </section>
+
+  <div id="touchpad">
+    <button data-k="ArrowUp">▲</button>
+    <div><button data-k="ArrowLeft">◀</button><button data-k="ArrowDown">▼</button><button data-k="ArrowRight">▶</button></div>
+  </div>
+</div>
+
+<div id="lightbox" class="hidden"><img alt=""><div class="lb-cap"></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+<script src="js/house.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
