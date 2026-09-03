@@ -345,7 +345,6 @@ const FURNITURE = [
   { t: 'wardrobe', l: 2, x: 4.55, y: 8.42, r: 270, w: 1.7, dark: true },
   { t: 'wardrobe', l: 2, x: 6.85, y: 8.42, r: 90, w: 1.7, dark: true },
   { t: 'bookcase', l: 2, x: 5.2, y: 9.72, r: 0, w: 4.2, h: 2.4, dark: true, shelfBack: true },
-  { t: 'readingChair', l: 2, x: 7.7, y: 10.75, r: 200 },
   { t: 'bed', l: 2, x: 6.5, y: 5.6, r: 0, w: 1.6, len: 2.1 },
   { t: 'wardrobe', l: 2, x: 4.86, y: 5.2, r: 270, w: 2.6 },
   { t: 'desk', l: 2, x: 7.6, y: 6.9, r: 0, w: 1.4, small: true },
