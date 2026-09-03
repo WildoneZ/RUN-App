@@ -621,8 +621,8 @@
   /* ---------------- exterior massing details */
   function buildExterior() {
     // ground planes beyond the room patches: driveway apron and far lawn handled by rooms; add the distant terrain
-    const disc = new THREE.Mesh(new THREE.CircleGeometry(48, 48), scaledMat('lawn', 96, 96)); disc.rotation.x = -Math.PI / 2; disc.position.set(6.8, -0.4, -9); disc.receiveShadow = true; world.add(disc);
-    const disc2 = new THREE.Mesh(new THREE.CircleGeometry(60, 48), M.hedge); disc2.rotation.x = -Math.PI / 2; disc2.position.set(6.8, -0.5, -9); world.add(disc2); // dark tree-line ground beyond the lawn
+    const disc = new THREE.Mesh(new THREE.CircleGeometry(30, 48), scaledMat('lawn', 60, 60)); disc.rotation.x = -Math.PI / 2; disc.position.set(6.8, -0.4, -9); disc.receiveShadow = true; world.add(disc);
+    const disc2 = new THREE.Mesh(new THREE.CircleGeometry(40, 48), M.hedge); disc2.rotation.x = -Math.PI / 2; disc2.position.set(6.8, -0.5, -9); world.add(disc2); // dark tree-line ground beyond the lawn
     // garage apron up to the road
     // window reveals / roof parapets
     for (const [yb, yt, x0, y0, x1, y1] of [[9.9, 10.3, 0, 0, 13.6, 0.3], [9.9, 10.3, 0, 0, 0.3, 14.25], [9.9, 10.3, 13.3, 0, 13.6, 15.45], [9.9, 10.3, 0, 13.95, 2.98, 14.25], [9.9, 10.3, 8.02, 15.15, 13.6, 15.45], [9.9, 10.3, 2.98, 10.9, 3.28, 14.25]])
