@@ -174,6 +174,9 @@
   /* ================================================================ WORLD */
   const world = new THREE.Group(); scene.add(world);
   const colliders = []; // {x0,x1,z0,z1,y0,y1}
+  let softFurniture = false;            // true while building loose furniture → no colliders (walk straight through)
+  const pushCollider = (c) => { if (!softFurniture) colliders.push(c); };
+  const furnitureBoxes = [];            // {item, box} for audits
   const patches = [];   // walkable {x0,x1,z0,z1,y} or ramps {ramp:true, ...}
   const roomsByLevel = {};
   const boxGeo = new THREE.BoxGeometry(1, 1, 1);
@@ -187,7 +190,7 @@
     if (o.collide) {
       let hw = w / 2, hd = d / 2;
       if (o.rot) { const c = Math.abs(Math.cos(o.rot)), s = Math.abs(Math.sin(o.rot)); const nw = hw * c + hd * s, nd = hw * s + hd * c; hw = nw; hd = nd; }
-      colliders.push({ x0: cx - hw, x1: cx + hw, z0: cz - hd, z1: cz + hd, y0: cy - h / 2, y1: cy + h / 2 });
+      pushCollider({ x0: cx - hw, x1: cx + hw, z0: cz - hd, z1: cz + hd, y0: cy - h / 2, y1: cy + h / 2 });
     }
     return m;
   }
@@ -388,7 +391,7 @@
         addBox(L, 0.06, 0.08, M.timber, cx, base + 1.12, Z(cy), { rot, collide: true });
         addBox(L, 0.06, 0.08, M.timber, cx, base + 0.05, Z(cy), { rot, collide: true });
         for (let s = 0.05; s <= L; s += 0.11) addBox(0.04, 1.1, 0.04, M.timber, x0 + ux * s, base + 0.57, Z(y0 + uy * s), { rot, collide: false, shadow: false });
-        colliders.push({ x0: Math.min(x0, x1) - 0.04, x1: Math.max(x0, x1) + 0.04, z0: Math.min(Z(y0), Z(y1)) - 0.04, z1: Math.max(Z(y0), Z(y1)) + 0.04, y0: base, y1: base + 1.2 });
+        pushCollider({ x0: Math.min(x0, x1) - 0.04, x1: Math.max(x0, x1) + 0.04, z0: Math.min(Z(y0), Z(y1)) - 0.04, z1: Math.max(Z(y0), Z(y1)) + 0.04, y0: base, y1: base + 1.2 });
       } else if (type === 'planter') {
         addBox(L, 0.55, 0.5, M.plasterExt, cx, base + 0.275, Z(cy), { rot, collide: true });
         addBox(L - 0.1, 0.05, 0.4, M.soil, cx, base + 0.55, Z(cy), { rot, collide: false, shadow: false });
@@ -444,13 +447,13 @@
     const m = new THREE.Mesh(o.geo || boxGeo, mat); m.scale.set(w, h, d); m.position.set(lx, ly, -lz); if (o.rot) m.rotation.y = o.rot; m.castShadow = o.shadow !== false; m.receiveShadow = true; g.add(m);
     if (o.collide !== false && (h > 0.35)) { // world AABB
       g.updateMatrixWorld(true); const bb = new THREE.Box3().setFromObject(m);
-      colliders.push({ x0: bb.min.x, x1: bb.max.x, z0: bb.min.z, z1: bb.max.z, y0: bb.min.y, y1: bb.max.y });
+      pushCollider({ x0: bb.min.x, x1: bb.max.x, z0: bb.min.z, z1: bb.max.z, y0: bb.min.y, y1: bb.max.y });
     }
     return m;
   }
   const cylGeo = new THREE.CylinderGeometry(1, 1, 1, 24);
   const sphGeo = new THREE.SphereGeometry(1, 20, 14);
-  function lcyl(g, r, h, mat, lx, ly, lz, o = {}) { const m = new THREE.Mesh(cylGeo, mat); m.scale.set(r, h, r); m.position.set(lx, ly, -lz); m.castShadow = true; m.receiveShadow = true; g.add(m); if (o.collide) { g.updateMatrixWorld(true); const bb = new THREE.Box3().setFromObject(m); colliders.push({ x0: bb.min.x, x1: bb.max.x, z0: bb.min.z, z1: bb.max.z, y0: bb.min.y, y1: bb.max.y }); } return m; }
+  function lcyl(g, r, h, mat, lx, ly, lz, o = {}) { const m = new THREE.Mesh(cylGeo, mat); m.scale.set(r, h, r); m.position.set(lx, ly, -lz); m.castShadow = true; m.receiveShadow = true; g.add(m); if (o.collide) { g.updateMatrixWorld(true); const bb = new THREE.Box3().setFromObject(m); pushCollider({ x0: bb.min.x, x1: bb.max.x, z0: bb.min.z, z1: bb.max.z, y0: bb.min.y, y1: bb.max.y }); } return m; }
 
   const FURN = {
     bed(f, base) {
@@ -466,7 +469,7 @@
       const g = group(f.x, f.y, base, f.r); const w = f.w || 2.4;
       if (f.curved) { // organic curved sofa (brochure lounge)
         for (let i = 0; i < 7; i++) { const a = (i - 3) / 3 * 0.9; const lx = Math.sin(a) * 1.5, lz = Math.cos(a) * 1.5 - 1.5; lbox(g, 0.65, 0.42, 0.9, M.fabric, lx, 0.21, lz, { rot: -a, collide: i === 3 }); lbox(g, 0.65, 0.45, 0.26, M.fabric, lx - Math.sin(a) * 0.35, 0.6, lz - Math.cos(a) * 0.35, { rot: -a, collide: false }); }
-        colliders.push({ x0: f.x - 1.6, x1: f.x + 1.6, z0: Z(f.y) - 0.9, z1: Z(f.y) + 0.9, y0: base, y1: base + 0.8 });
+        pushCollider({ x0: f.x - 1.6, x1: f.x + 1.6, z0: Z(f.y) - 0.9, z1: Z(f.y) + 0.9, y0: base, y1: base + 0.8 });
       } else { lbox(g, w, 0.42, 0.9, M.fabric, 0, 0.21, 0); lbox(g, w, 0.4, 0.25, M.fabric, 0, 0.6, -0.33, { collide: false }); lbox(g, 0.25, 0.25, 0.9, M.fabric, -w / 2 + 0.12, 0.55, 0, { collide: false }); lbox(g, 0.25, 0.25, 0.9, M.fabric, w / 2 - 0.12, 0.55, 0, { collide: false }); }
     },
     armchair(f, base) { const g = group(f.x, f.y, base, f.r); const mat = f.olive ? M.olive : (f.rattan ? M.timber : M.fabric); lbox(g, 0.8, 0.4, 0.8, mat, 0, 0.2, 0); lbox(g, 0.8, 0.45, 0.16, mat, 0, 0.62, -0.32, { collide: false }); lbox(g, 0.16, 0.2, 0.8, M.walnut, -0.36, 0.5, 0, { collide: false }); lbox(g, 0.16, 0.2, 0.8, M.walnut, 0.36, 0.5, 0, { collide: false }); },
@@ -508,7 +511,7 @@
       for (let i = 0; i < 5; i++) { // bar stools (olive)
         const sz = -l / 2 + 0.5 + i * (l - 1) / 4; lcyl(g, 0.02, 0.75, M.walnut, w / 2 + 0.55, 0.37, sz); lbox(g, 0.42, 0.08, 0.42, M.olive, w / 2 + 0.55, 0.78, sz, { collide: false }); lbox(g, 0.42, 0.35, 0.06, M.olive, w / 2 + 0.75, 1.0, sz, { collide: false }); lcyl(g, 0.2, 0.02, M.walnut, w / 2 + 0.55, 0.02, sz);
       }
-      colliders.push({ x0: f.x - w / 2, x1: f.x + w / 2 + 0.8, z0: Z(f.y) - l / 2, z1: Z(f.y) + l / 2, y0: base, y1: base + 1 });
+      pushCollider({ x0: f.x - w / 2, x1: f.x + w / 2 + 0.8, z0: Z(f.y) - l / 2, z1: Z(f.y) + l / 2, y0: base, y1: base + 1 });
     },
     kitchenTall(f, base) {
       const g = group(f.x, f.y, base, f.r); const w = f.w;
@@ -526,7 +529,7 @@
       const g = group(f.x, f.y, base, f.r);
       const top = new THREE.Mesh(cylGeo, M.timber); top.scale.set(1.15, 0.05, 1.4); top.position.set(0, 0.74, 0); top.castShadow = true; g.add(top);
       lbox(g, 0.7, 0.7, 0.9, M.timber, 0, 0.36, 0); lbox(g, 0.7, 0.7, 0.9, M.timber, 0, 0.36, 0);
-      colliders.push({ x0: f.x - 1.2, x1: f.x + 1.2, z0: Z(f.y) - 1.45, z1: Z(f.y) + 1.45, y0: base, y1: base + 0.8 });
+      pushCollider({ x0: f.x - 1.2, x1: f.x + 1.2, z0: Z(f.y) - 1.45, z1: Z(f.y) + 1.45, y0: base, y1: base + 0.8 });
       const pos = [[-0.95, 0.9], [-0.95, 0], [-0.95, -0.9], [0.95, 0.9], [0.95, 0], [0.95, -0.9], [0, 1.65], [0, -1.65]];
       for (const [px, pz] of pos) { const c = new THREE.Group(); c.position.set(px, 0, -pz); c.rotation.y = Math.atan2(-px, pz) + Math.PI; g.add(c);
         const seat = new THREE.Mesh(cylGeo, M.fabric); seat.scale.set(0.26, 0.08, 0.26); seat.position.y = 0.46; seat.castShadow = true; c.add(seat);
@@ -547,7 +550,7 @@
       lbox(g, 0.02, 0.5, 0.3, M.timber, -w / 2 + 1.5, 1.35, 0.15, { collide: false, shadow: false });
       for (let i = 0; i < 4; i++) lbox(g, 0.8, 0.03, 0.3, M.brass, 1.6, 1.0 + i * 0.4, 0.15, { collide: false, shadow: false });
     },
-    outdoorTable(f, base) { const g = group(f.x, f.y, base, f.r); lbox(g, 1.0, 0.05, 2.4, M.timber, 0, 0.74, 0); lbox(g, 0.1, 0.7, 0.1, M.timber, -0.4, 0.35, -1.0); lbox(g, 0.1, 0.7, 0.1, M.timber, 0.4, 0.35, 1.0); lbox(g, 0.1, 0.7, 0.1, M.timber, 0.4, 0.35, -1.0); lbox(g, 0.1, 0.7, 0.1, M.timber, -0.4, 0.35, 1.0); for (let i = 0; i < 8; i++) { const sx = (i < 4 ? -0.95 : 0.95), sz = -0.9 + (i % 4) * 0.6; lbox(g, 0.45, 0.06, 0.45, M.fabricGrey, sx, 0.45, sz, { collide: false }); lbox(g, 0.06, 0.4, 0.45, M.timber, sx + (i < 4 ? -0.2 : 0.2), 0.65, sz, { collide: false }); } colliders.push({ x0: f.x - 1.3, x1: f.x + 1.3, z0: Z(f.y) - 1.3, z1: Z(f.y) + 1.3, y0: base, y1: base + 0.8 }); },
+    outdoorTable(f, base) { const g = group(f.x, f.y, base, f.r); lbox(g, 1.0, 0.05, 2.4, M.timber, 0, 0.74, 0); lbox(g, 0.1, 0.7, 0.1, M.timber, -0.4, 0.35, -1.0); lbox(g, 0.1, 0.7, 0.1, M.timber, 0.4, 0.35, 1.0); lbox(g, 0.1, 0.7, 0.1, M.timber, 0.4, 0.35, -1.0); lbox(g, 0.1, 0.7, 0.1, M.timber, -0.4, 0.35, 1.0); for (let i = 0; i < 8; i++) { const sx = (i < 4 ? -0.95 : 0.95), sz = -0.9 + (i % 4) * 0.6; lbox(g, 0.45, 0.06, 0.45, M.fabricGrey, sx, 0.45, sz, { collide: false }); lbox(g, 0.06, 0.4, 0.45, M.timber, sx + (i < 4 ? -0.2 : 0.2), 0.65, sz, { collide: false }); } pushCollider({ x0: f.x - 1.3, x1: f.x + 1.3, z0: Z(f.y) - 1.3, z1: Z(f.y) + 1.3, y0: base, y1: base + 0.8 }); },
     outdoorChairs(f, base) { const g = group(f.x, f.y, base, f.r); lcyl(g, 0.35, 0.04, M.timber, 0, 0.7, 0); lcyl(g, 0.04, 0.7, M.bronze, 0, 0.35, 0, { collide: true }); for (const sx of [-0.7, 0.7]) { lbox(g, 0.5, 0.06, 0.5, M.timber, sx, 0.44, 0); lbox(g, 0.06, 0.45, 0.5, M.timber, sx + Math.sign(sx) * 0.22, 0.65, 0, { collide: false }); } },
     lounger(f, base) { const g = group(f.x, f.y, base, f.r); lbox(g, 0.7, 0.12, 1.9, M.fabricGrey, 0, 0.3, 0); lbox(g, 0.7, 0.5, 0.1, M.fabricGrey, 0, 0.55, -0.9, { collide: false, rot: 0 }); lbox(g, 0.65, 0.24, 1.85, M.timber, 0, 0.12, 0, { collide: false }); },
     loungeSet(f, base) { for (const [dx, dz] of [[-0.9, 0.2], [0.9, 0.2]]) { const g = group(f.x + dx, f.y + dz, base, 0); lbox(g, 0.9, 0.35, 0.9, M.fabricGrey, 0, 0.18, 0); lbox(g, 0.7, 0.2, 0.7, M.fabricGrey, 0, 0.42, 0, { collide: false }); } },
@@ -556,7 +559,7 @@
       const g = group(f.x, f.y, base, f.r);
       if (f.builtIn) { lbox(g, 0.8, 0.55, 1.7, M.marble, 0, 0.275, 0); lbox(g, 0.66, 0.05, 1.56, M.white, 0, 0.53, 0, { collide: false, shadow: false }); lcyl(g, 0.02, 1.9, M.brass, 0.3, 1.0, -0.8); return; }
       const m = new THREE.Mesh(new THREE.CapsuleGeometry(0.4, 0.9, 6, 16), M.white); m.rotation.z = Math.PI / 2; m.rotation.y = Math.PI / 2; m.scale.set(1, 0.85, 1); m.position.set(0, 0.32, 0); m.castShadow = true; g.add(m);
-      g.updateMatrixWorld(true); const bb = new THREE.Box3().setFromObject(m); colliders.push({ x0: bb.min.x, x1: bb.max.x, z0: bb.min.z, z1: bb.max.z, y0: base, y1: base + 0.7 });
+      g.updateMatrixWorld(true); const bb = new THREE.Box3().setFromObject(m); pushCollider({ x0: bb.min.x, x1: bb.max.x, z0: bb.min.z, z1: bb.max.z, y0: base, y1: base + 0.7 });
       lcyl(g, 0.015, 0.9, M.brass, 0.3, 0.45, 0.85); lbox(g, 0.02, 0.02, 0.25, M.brass, 0.3, 0.9, 0.75, { collide: false, shadow: false });
       lcyl(g, 0.25, 0.45, M.walnut, 0.65, 0.22, -0.9); // side stool
     },
@@ -589,7 +592,7 @@
       pbox(x0, y0, x1, y1, base - 1.6, base - 1.5, M.poolFloor, { collide: false, shadow: false });
       for (const [a, b, c, d] of [[x0 - 0.02, y0, x0, y1], [x1, y0, x1 + 0.02, y1], [x0, y0 - 0.02, x1, y0], [x0, y1, x1, y1 + 0.02]]) pbox(a, b, c, d, base - 1.6, base + 0.03, M.poolFloor, { collide: false, shadow: false });
       const w = plane(x0, y0, x1, y1, base - 0.15, scaledMat('water', x1 - x0, y1 - y0)); w.receiveShadow = false; waterMeshes.push(w);
-      colliders.push({ x0, x1, z0: Z(y1), z1: Z(y0), y0: base - 2, y1: base + 0.5 });
+      pushCollider({ x0, x1, z0: Z(y1), z1: Z(y0), y0: base - 2, y1: base + 0.5 });
       for (let i = 0; i < 4; i++) { const l = new THREE.Mesh(sphGeo, M.emissive); l.scale.setScalar(0.06); l.position.set(x0 + 0.05, base - 0.8, Z(y0 + 0.9 + i * 0.9)); world.add(l); }
     },
     hedge(f, base) { const [x0, y0, x1, y1] = [f.x, f.y, f.x1, f.y1]; pbox(x0, y0, x1, y1, base, base + 1.9, M.hedge, { collide: true }); },
@@ -616,7 +619,19 @@
   };
   const waterMeshes = [];
 
-  function buildFurniture() { for (const f of FURNITURE) { const fn = FURN[f.t]; if (!fn) { console.warn('no furniture', f.t); continue; } fn(f, LEVELS[f.l]); } }
+  const SOLID_TYPES = new Set(['pool', 'hedge', 'tree', 'retaining', 'box', 'planter']);
+  function buildFurniture() {
+    for (const f of FURNITURE) {
+      const fn = FURN[f.t]; if (!fn) { console.warn('no furniture', f.t); continue; }
+      softFurniture = !SOLID_TYPES.has(f.t);
+      const before = world.children.length;
+      fn(f, LEVELS[f.l]);
+      const box = new THREE.Box3();
+      for (let i = before; i < world.children.length; i++) box.expandByObject(world.children[i]);
+      if (!box.isEmpty()) furnitureBoxes.push({ item: f, box });
+      softFurniture = false;
+    }
+  }
 
   /* ---------------- exterior massing details */
   function buildExterior() {
@@ -872,5 +887,5 @@
   setProgress(0.95);
   setTimeout(() => { document.getElementById('loading').classList.add('done'); }, 400);
   frame();
-  window.__walk = { player, teleport, movePlayer, colliders, patches, scene, camera, renderer, roomAt, LEVELS };
+  window.__walk = { player, teleport, movePlayer, colliders, patches, scene, camera, renderer, roomAt, LEVELS, furnitureBoxes };
 })();
